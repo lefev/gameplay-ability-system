@@ -5,6 +5,8 @@ Saved
 Build
 
 .vscode
+.idea
+.vsconfig
 .vs
 *.vc.dh
 *.opensdf

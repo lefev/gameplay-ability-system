@@ -4,6 +4,7 @@
 
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
@@ -37,6 +38,13 @@ void AAuraPlayerController::SetupInputComponent()
 	EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AAuraPlayerController::Move);
 }
 
+void AAuraPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	CursorTrace();
+}
+
 void AAuraPlayerController::Move(const FInputActionValue& Value)
 {
 	const auto InputAxisVector{ Value.Get<FVector2D>() };
@@ -50,5 +58,34 @@ void AAuraPlayerController::Move(const FInputActionValue& Value)
 	{
 		ControlPawn->AddMovementInput(ForwardDirection, InputAxisVector.Y);
 		ControlPawn->AddMovementInput(RightDirection, InputAxisVector.X);
+	}
+}
+
+void AAuraPlayerController::CursorTrace()
+{
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+	if (!Hit.bBlockingHit) return;
+
+	LastActor = ThisActor;
+	ThisActor = Hit.GetActor();
+
+	if (LastActor == nullptr)
+	{
+		if (ThisActor == nullptr) return;
+		ThisActor->HighlightActor();
+		return;
+	}
+	
+	if (ThisActor == nullptr)
+	{
+		LastActor->UnHighlightActor();
+		return;
+	}
+
+	if (LastActor != ThisActor)
+	{
+		LastActor->UnHighlightActor();
+		ThisActor->HighlightActor();
 	}
 }

@@ -4,3 +4,4 @@
 
 #include "CoreMinimal.h"
 
+constexpr auto GCustom_Depth_Red{ 250 };

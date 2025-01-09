@@ -18,4 +18,7 @@ public:
 	virtual void UnHighlightActor() override;
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsHighlighted = false;
+
+protected:
+	virtual void BeginPlay() override;
 };

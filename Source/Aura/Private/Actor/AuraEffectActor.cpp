@@ -5,6 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "AbilitySystemInterface.h"
+#include "AbilitySystemBlueprintLibrary.h"
 #include "AbilitySystem/AuraAttributeSet.h"
 #include "Components/SphereComponent.h"
 
@@ -12,39 +13,29 @@
 AAuraEffectActor::AAuraEffectActor()
 {
 	PrimaryActorTick.bCanEverTick = false;
-
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
-	SetRootComponent(Mesh);
-	
-	Sphere = CreateDefaultSubobject<USphereComponent>("Sphere");
-	Sphere->SetupAttachment(GetRootComponent());
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(FName("SceneRoot")));
 }
 
-void AAuraEffectActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
-	const auto AbilitySystemInterface{ Cast<IAbilitySystemInterface>(OtherActor) };
-	if (!AbilitySystemInterface) return;
-	const auto AttributeSet{ Cast<UAuraAttributeSet>(AbilitySystemInterface->GetAbilitySystemComponent()->GetAttributeSet(UAuraAttributeSet::StaticClass())) };
-	// ToDo: This is a hack and I need to change this to a solution which works with const
-	const auto AttributeSetNoConst{ const_cast<UAuraAttributeSet*>(AttributeSet) };
-	AttributeSetNoConst->SetHealth(AttributeSetNoConst->GetHealth() + 25.f);
-	// Test for mana change
-	AttributeSetNoConst->SetMana(AttributeSetNoConst->GetMana() - 10.f);
-	Destroy();
-}
-
-void AAuraEffectActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
-	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	// Spawn some particles or some sound :)
-}
-
-// Called when the game starts or when spawned
 void AAuraEffectActor::BeginPlay()
 {
 	Super::BeginPlay();
 	
-	Sphere->OnComponentBeginOverlap.AddDynamic(this, &AAuraEffectActor::OnBeginOverlap);
-	Sphere->OnComponentEndOverlap.AddDynamic(this, &AAuraEffectActor::OnEndOverlap);
+}
+
+void AAuraEffectActor::ApplyEffectToTarget(AActor* Target, TSubclassOf<UGameplayEffect> EffectClass)
+{
+	const auto TargetAbilitySystemComponent{ UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(Target) };
+	if (!TargetAbilitySystemComponent) return;
+
+	checkf(GameplayEffectClass, TEXT("You need to set an GameplayEffect Class"));
+	auto GameplayEffectContext{ TargetAbilitySystemComponent->MakeEffectContext() };
+	GameplayEffectContext.AddSourceObject(this);
+	const auto GameplayEffectSpec{ TargetAbilitySystemComponent->MakeOutgoingSpec(
+		GameplayEffectClass,
+		1.f,
+		GameplayEffectContext)
+	};
+	TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpec.Data.Get());
+	
+	
 }

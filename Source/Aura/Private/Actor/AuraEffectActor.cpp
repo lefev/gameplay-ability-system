@@ -23,18 +23,21 @@ AAuraEffectActor::AAuraEffectActor()
 void AAuraEffectActor::OnBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	IAbilitySystemInterface* AbilitySystemInterface = Cast<IAbilitySystemInterface>(OtherActor);
+	const auto AbilitySystemInterface{ Cast<IAbilitySystemInterface>(OtherActor) };
 	if (!AbilitySystemInterface) return;
 	const auto AttributeSet{ Cast<UAuraAttributeSet>(AbilitySystemInterface->GetAbilitySystemComponent()->GetAttributeSet(UAuraAttributeSet::StaticClass())) };
 	// ToDo: This is a hack and I need to change this to a solution which works with const
-	const auto AttributeSetNoConst = const_cast<UAuraAttributeSet*>(AttributeSet);
+	const auto AttributeSetNoConst{ const_cast<UAuraAttributeSet*>(AttributeSet) };
 	AttributeSetNoConst->SetHealth(AttributeSetNoConst->GetHealth() + 25.f);
+	// Test for mana change
+	AttributeSetNoConst->SetMana(AttributeSetNoConst->GetMana() - 10.f);
 	Destroy();
 }
 
 void AAuraEffectActor::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
+	// Spawn some particles or some sound :)
 }
 
 // Called when the game starts or when spawned

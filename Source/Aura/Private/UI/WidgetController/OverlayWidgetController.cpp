@@ -3,6 +3,11 @@
 
 #include "UI/WidgetController/OverlayWidgetController.h"
 
-UOverlayWidgetController::UOverlayWidgetController()
+#include "AbilitySystem/AuraAttributeSet.h"
+
+void UOverlayWidgetController::BroadcastInitialValues()
 {
+	const auto AuraAttributeSet{ CastChecked<UAuraAttributeSet>(AttributeSet) };
+	OnHealthChanged.Broadcast(AuraAttributeSet->GetHealth());
+	OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetMaxHealth());
 }

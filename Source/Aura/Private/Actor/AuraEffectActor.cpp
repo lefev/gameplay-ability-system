@@ -27,15 +27,25 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, TSubclassOf<UGam
 	const auto TargetAbilitySystemComponent{ UAbilitySystemBlueprintLibrary::GetAbilitySystemComponent(TargetActor) };
 	if (!TargetAbilitySystemComponent) return;
 
-	checkf(GameplayEffectClass, TEXT("You need to set an GameplayEffect Class"));
 	auto GameplayEffectContext{ TargetAbilitySystemComponent->MakeEffectContext() };
 	GameplayEffectContext.AddSourceObject(this);
-	const auto GameplayEffectSpec{ TargetAbilitySystemComponent->MakeOutgoingSpec(
-		GameplayEffectClass,
-		1.f,
-		GameplayEffectContext)
-	};
-	TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpec.Data.Get());
+	if (InstantGameplayEffectClass)
+	{
+		const auto GameplayEffectSpec{ TargetAbilitySystemComponent->MakeOutgoingSpec(
+			InstantGameplayEffectClass,
+			1.f,
+			GameplayEffectContext)
+		};
+		TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpec.Data.Get());
+	}
 	
-	
+	if (DurationGameplayEffectClass)
+	{
+		const auto GameplayEffectSpec{ TargetAbilitySystemComponent->MakeOutgoingSpec(
+			DurationGameplayEffectClass,
+			1.f,
+			GameplayEffectContext)
+		};
+		TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*GameplayEffectSpec.Data.Get());
+	}
 }

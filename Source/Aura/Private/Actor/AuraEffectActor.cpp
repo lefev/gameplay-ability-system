@@ -28,7 +28,7 @@ void AAuraEffectActor::ApplyEffectToTarget(AActor* TargetActor, const TSubclassO
 	EffectContext.AddSourceObject(this);
 	const auto EffectSpec{ TargetAbilitySystemComponent->MakeOutgoingSpec(
 		EffectClass,
-		1.f,
+		ActorLevel,
 		EffectContext)
 	};
 	TargetAbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpec.Data.Get());
